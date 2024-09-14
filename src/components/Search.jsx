@@ -6,17 +6,17 @@ const Search = ({ search, setSearch }) => {
 
   // Сбрасываем поисковый запрос при изменении маршрута
   useEffect(() => {
-    setSearch(''); // Проверяем, что setSearch передан правильно
+    setSearch('');
   }, [location, setSearch]);
 
   return (
-    <div className="w-full md:w-auto flex items-center bg-white p-2 shadow-md rounded-md mt-4 md:mt-0 border-2 border-gray-600">
-      <i className="fa-solid fa-magnifying-glass mr-2 text-gray-600"></i>
+    <div className="relative w-full max-w-lg bg-gray-100 rounded-full p-2 transition-shadow duration-300 ease-in-out hover:shadow-lg">
+      <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
       <input
-        className="w-full md:w-64 h-8 px-2 text-sm outline-none border-none text-gray-700 placeholder-gray-600 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-gray-600 focus:outline-none rounded-md"
+        className="w-full h-10 pl-12 pr-4 bg-gray-100 text-gray-700 placeholder-gray-500 rounded-full  focus:outline-none transition-all duration-300"
         type="text"
         placeholder="Search"
-        onChange={(e) => setSearch(e.target.value)} // Используем setSearch для обновления состояния
+        onChange={(e) => setSearch(e.target.value)}
         value={search || ''}
       />
     </div>
@@ -24,3 +24,4 @@ const Search = ({ search, setSearch }) => {
 };
 
 export default Search;
+

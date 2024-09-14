@@ -20,6 +20,8 @@ const Header = () => {
           <img className="w-24 md:w-40 transition-transform duration-500 hover:scale-110" src={Logo} alt="Logo" />
         </Link>
 
+        
+
         {/* Навигация для десктопа */}
         <nav className="hidden md:flex gap-6 items-center">
         
