@@ -1,28 +1,24 @@
-// eslint-disable-next-line react/prop-types
-
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// eslint-disable-next-line react/prop-types
 const Search = ({ search, setSearch }) => {
   const location = useLocation();
 
+  // Сбрасываем поисковый запрос при изменении маршрута
   useEffect(() => {
-    setSearch('');
+    setSearch(''); // Проверяем, что setSearch передан правильно
   }, [location, setSearch]);
 
   return (
-    <div className='fixed top-10 right-10 transform -translate-y-1/2 bg-white p-4 shadow-lg rounded z-50'>
-      <div className='flex items-center'>
-        <i className='fa-solid fa-magnifying-glass mr-2'></i>
-        <input
-          className='peer h-full w-50 outline-none text-sm text-gray-700 pr-7 pl-6 border-gray-300'
-          type='text'
-          placeholder='Recherche'
-          onChange={(e) => setSearch(e.target.value)}
-          value={search || ''}
-        />
-      </div>
+    <div className="w-full md:w-auto flex items-center bg-white p-2 shadow-md rounded-md mt-4 md:mt-0 border-2 border-gray-600">
+      <i className="fa-solid fa-magnifying-glass mr-2 text-gray-600"></i>
+      <input
+        className="w-full md:w-64 h-8 px-2 text-sm outline-none border-none text-gray-700 placeholder-gray-600 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-gray-600 focus:outline-none rounded-md"
+        type="text"
+        placeholder="Search"
+        onChange={(e) => setSearch(e.target.value)} // Используем setSearch для обновления состояния
+        value={search || ''}
+      />
     </div>
   );
 };

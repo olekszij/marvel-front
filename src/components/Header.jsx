@@ -1,46 +1,75 @@
+import { useState } from 'react';
 import Logo from '../assets/img/logo.png';
 import { Link } from 'react-router-dom';
+import Search from './Search';
 
 const Header = () => {
+  const [search, setSearch] = useState(''); // Создаем состояние для поиска
+  const [menuOpen, setMenuOpen] = useState(false); // Для мобильного меню
+
+  // Функция для закрытия меню
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
+
   return (
-    <header className='flex justify-between w-full mx-auto p-4  pl-10 pr-96 fixed top-10  transform -translate-y-1/2 shadow-lg rounded z-50 bg-white '>
-      <Link to='/'>
-        <img className='w-40  ' src={Logo} alt='Logo' />
-      </Link>
+    <header className="flex justify-between items-center p-4 fixed top-0 w-full bg-white shadow-lg z-50">
+      <div className="flex justify-between items-center w-full max-w-7xl mx-auto">
+        {/* Логотип */}
+        <Link to="/" onClick={closeMenu}>
+          <img className="w-24 md:w-40 transition-transform duration-500 hover:scale-110" src={Logo} alt="Logo" />
+        </Link>
 
-      <nav>
-        <ul className='flex gap-4 p-2'>
-          <Link to='/'>
-            <li className='p-2 hover:border-none hover:bg-slate-200 rounded-md'>
-              Home
-            </li>
+        {/* Навигация для десктопа */}
+        <nav className="hidden md:flex gap-6 items-center">
+        
+          <Link 
+            to="/characters" 
+            className="relative p-2 text-black hover:text-black transition-all duration-300 ease-in-out group"
+          >
+            Characters
+            <span className="absolute left-0 bottom-0 h-1 w-0 bg-red-600 group-hover:w-full transition-all duration-300 ease-in-out"></span>
           </Link>
+          <Link 
+            to="/comics" 
+            className="relative p-2 text-black hover:text-black transition-all duration-300 ease-in-out group"
+          >
+            Comics
+            <span className="absolute left-0 bottom-0 h-1 w-0 bg-red-600 group-hover:w-full transition-all duration-300 ease-in-out"></span>
+          </Link>
+        </nav>
 
-          <Link to='/'>
-            <li className='p-2 hover:border-none hover:bg-slate-200 rounded-md'>
-              Characters
-            </li>
-          </Link>
+        {/* Мобильное меню */}
+        <div className="md:hidden">
+          <button
+            className="p-2 rounded-full bg-red-600 text-white shadow-lg hover:bg-red-500 transition duration-300"
+            onClick={() => setMenuOpen(!menuOpen)} // Открытие/закрытие меню
+          >
+            <i className="fas fa-bars"></i> {/* Иконка меню */}
+          </button>
 
-          <Link to='/comics'>
-            <li className='p-2 hover:border-none hover:bg-slate-200 rounded-md'>
-              Comics
-            </li>
-          </Link>
-
-          <Link to='/favorites'>
-            <li className='p-2 hover:border-none hover:bg-slate-200 rounded-md'>
-              <i className='fa-regular fa-heart'></i>
-            </li>
-          </Link>
-
-          <Link to='/profile'>
-            <li className='p-2 hover:border-none hover:bg-slate-200 rounded-md'>
-              <i className='fa-regular fa-user'></i>{' '}
-            </li>
-          </Link>
-        </ul>
-      </nav>
+          {/* Выпадающее меню для мобильных устройств */}
+          {menuOpen && (
+            <nav className="absolute right-4 top-16 bg-white shadow-lg rounded-lg p-4">
+             
+              <Link 
+                to="/characters" 
+                className="block p-2 text-gray-700 hover:bg-red-600 hover:text-white transition-all duration-300 ease-in-out rounded-md"
+                onClick={closeMenu}
+              >
+                Characters
+              </Link>
+              <Link 
+                to="/comics" 
+                className="block p-2 text-gray-700 hover:bg-red-600 hover:text-white transition-all duration-300 ease-in-out rounded-md"
+                onClick={closeMenu}
+              >
+                Comics
+              </Link>
+            </nav>
+          )}
+        </div>
+      </div>
     </header>
   );
 };
