@@ -1,45 +1,61 @@
 /* eslint-disable react/prop-types */
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Search from '../components/Search'; 
+import Search from '../components/Search';
+
+// Компонент скелетона для загрузки
+const CharacterSkeleton = () => (
+  <div className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+    <div className="w-full h-64 bg-gray-200"></div>
+    <div className="p-4">
+      <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+    </div>
+  </div>
+);
 
 const Characters = () => {
-  const [data, setData] = useState([]); // Массив персонажей
-  const [isLoading, setIsLoading] = useState(false); // Состояние загрузки
-  const [skip, setSkip] = useState(50); // Смещение для запроса новых данных
-  const [hasMore, setHasMore] = useState(true); // Состояние для отслеживания, есть ли еще данные для загрузки
-  const [search, setSearch] = useState(''); // Состояние для поискового запроса
-  const [isSearchMode, setIsSearchMode] = useState(false); // Режим поиска
-  const limit = 50; // Лимит персонажей за один запрос
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [search, setSearch] = useState('');
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const limit = 50;
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (search.trim() !== '') {
-      // Если есть поисковый запрос, включаем режим поиска
       setIsSearchMode(true);
       searchCharacters();
     } else {
-      // Иначе используем логику подгрузки персонажей
       setIsSearchMode(false);
       loadMoreCharacters();
     }
 
-    window.addEventListener('scroll', handleScroll); // Добавляем обработчик скролла
-    return () => {
-      window.removeEventListener('scroll', handleScroll); // Очищаем обработчик скролла при размонтировании компонента
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 200 &&
+        !isLoading &&
+        hasMore &&
+        !isSearchMode
+      ) {
+        loadMoreCharacters();
+      }
+      setShowScrollTop(window.scrollY > 300);
     };
-  }, [search]); // Выполняем эффект при изменении поискового запроса
 
-  const handleScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop >=
-      document.documentElement.offsetHeight - 200 &&
-      !isLoading && 
-      hasMore && 
-      !isSearchMode // Подгрузка работает только если мы не в режиме поиска
-    ) {
-      loadMoreCharacters(); // Загружаем больше данных
-    }
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [search]);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const shuffle = (array) => {
@@ -51,10 +67,9 @@ const Characters = () => {
   };
 
   const loadMoreCharacters = async () => {
-    setIsLoading(true); // Включаем индикатор загрузки
+    setIsLoading(true);
     try {
-      // Получаем случайное смещение, чтобы загружать случайных персонажей
-      const randomSkip = Math.floor(Math.random() * 1000); // Диапазон можно настроить
+      const randomSkip = Math.floor(Math.random() * 1000);
 
       const response = await axios.get(
         `https://site--marvel-backend--6jkf28t7mc47.code.run/characters?limit=${limit}&skip=${randomSkip}`
@@ -70,21 +85,20 @@ const Characters = () => {
       );
 
       if (filteredData.length === 0) {
-        setHasMore(false); // Если новых персонажей нет, останавливаем дальнейшую загрузку
+        setHasMore(false);
       } else {
-        setData((prevData) => [...prevData, ...filteredData]); // Добавляем уникальных персонажей в массив данных
-        setSkip((prevSkip) => prevSkip + limit); // Увеличиваем skip для следующего запроса
+        setData((prevData) => [...prevData, ...filteredData]);
       }
 
-      setIsLoading(false); // Отключаем индикатор загрузки
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching more characters:", error);
-      setIsLoading(false); // Отключаем индикатор загрузки в случае ошибки
+      setIsLoading(false);
     }
   };
 
   const searchCharacters = async () => {
-    setIsLoading(true); // Включаем индикатор загрузки
+    setIsLoading(true);
     try {
       const response = await axios.get(
         `https://site--marvel-backend--6jkf28t7mc47.code.run/characters?name=${search}`
@@ -96,56 +110,116 @@ const Characters = () => {
           'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available'
       );
 
-      setData(filteredData); // Заменяем данные найденными персонажами
+      setData(filteredData);
 
       if (filteredData.length === 0) {
-        setHasMore(false); // Если новых персонажей нет, останавливаем дальнейшую загрузку
+        setHasMore(false);
       }
 
-      setIsLoading(false); // Отключаем индикатор загрузки
+      setIsLoading(false);
     } catch (error) {
       console.error("Error searching characters:", error);
-      setIsLoading(false); // Отключаем индикатор загрузки в случае ошибки
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto p-4 mt-28">
-      {/* Компонент поиска */}
+    <div className="container mx-auto p-4 mt-28" ref={containerRef}>
       <Search search={search} setSearch={setSearch} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-        {data.length === 0 && !isLoading && (
-          <p>No characters available.</p>
-        )}
-
-        {data.map((character) => (
-          <Link
-            to={`/comics/${character._id}`} // Переход на страницу комиксов персонажа
-            key={character._id}
-            className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 overflow-hidden relative group"
-          >
-            <div className="relative z-10">
-              <img
-                className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
-                src={`${character.thumbnail.path}.${character.thumbnail.extension}`}
-                alt={character.name}
-              />
-              <div className="p-4 absolute bottom-0 left-0 right-0 bg-white bg-opacity-80 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
-                <h2 className="text-xl font-bold text-gray-900">{character.name}</h2>
-                <p className="text-sm text-gray-600 mb-2">
-                  {character.description
-                    ? character.description
-                    : ''}
-                </p>
-              </div>
+      {isLoading && data.length === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+          {[...Array(8)].map((_, index) => (
+            <CharacterSkeleton key={index} />
+          ))}
+        </div>
+      ) : (
+        <>
+          {data.length === 0 ? (
+            <div className="text-center mt-12">
+              <div className="text-6xl mb-4">🔍</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">No characters found</h2>
+              <p className="text-gray-600">Try adjusting your search or check back later</p>
             </div>
-          </Link>
-        ))}
-      </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+              {data.map((character, index) => (
+                <Link
+                  to={`/comics/${character._id}`}
+                  key={character._id}
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 overflow-hidden relative group"
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                    animation: 'fadeIn 0.5s ease-out forwards',
+                    opacity: 0
+                  }}
+                >
+                  <div className="relative z-10">
+                    <img
+                      className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
+                      src={`${character.thumbnail.path}.${character.thumbnail.extension}`}
+                      alt={character.name}
+                      loading="lazy"
+                    />
+                    <div className="p-4 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <h2 className="text-xl font-bold">{character.name}</h2>
+                      <p className="text-sm line-clamp-2">
+                        {character.description || 'No description available'}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
-      {isLoading && <h1>Loading more characters...</h1>} {/* Показать индикатор при загрузке */}
-      {!hasMore && <p className="text-center mt-4">No more characters to load.</p>} {/* Сообщение, когда больше нет данных */}
+      {isLoading && data.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+        </div>
+      )}
+
+      {!hasMore && data.length > 0 && (
+        <p className="text-center mt-8 text-gray-600">No more characters to load</p>
+      )}
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-600"
+          aria-label="Scroll to top"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 10l7-7m0 0l7 7m-7-7v18"
+            />
+          </svg>
+        </button>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

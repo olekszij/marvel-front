@@ -17,13 +17,13 @@ function App() {
       <Routes>
         {/* Главная страница с персонажами */}
         <Route path="/" element={<Personnages />} />
-        
+
         {/* Маршрут для страницы Characters (Персонажи) */}
         <Route path="/characters" element={<Personnages />} />
-        
+
         {/* Страница с комиксами */}
         <Route path="/comics" element={<Comics />} />
-        
+
         {/* Страница отдельного комикса */}
         <Route path="/comics/:id" element={<Comicslist />} />
       </Routes>
